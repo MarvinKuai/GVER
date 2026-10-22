@@ -1,0 +1,5 @@
+XSym
+0030
+de9bd931373635eb88161f584d11d52d
+../CLIP_baseline/mbeir_data.py
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 

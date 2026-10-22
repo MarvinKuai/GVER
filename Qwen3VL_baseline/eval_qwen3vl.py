@@ -1,0 +1,5 @@
+XSym
+0029
+9313691c194f51c17d08e3817972659d
+../CLIP_baseline/eval_clip.py
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  

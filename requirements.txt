@@ -1,0 +1,40 @@
+# ======================================================================
+# GM2M -- core requirements
+# ----------------------------------------------------------------------
+# Tested on CUDA 12.1, Python 3.10. Install PyTorch separately with the
+# wheel that matches your CUDA/driver combination, e.g.
+#     pip install torch==2.2.2 torchvision --index-url https://download.pytorch.org/whl/cu121
+# before installing this file.
+# ======================================================================
+
+# -------- scientific stack --------
+numpy>=1.24,<2.0
+pyyaml>=6.0
+Pillow>=9.5
+
+# -------- deep learning runtimes --------
+torch>=2.0
+torchvision>=0.15
+# Qwen3-VL-Embedding-8B needs the >=4.55 model class;
+# WeMM-Embedding-9B needs transformers==5.2.0 and MUST be installed in a
+# separate environment -- see README for details.
+transformers>=4.55,<5.0
+accelerate>=0.30
+safetensors>=0.4
+
+# -------- generative retrieval / semantic ID --------
+vector-quantize-pytorch>=1.14   # ResidualVQ used by M2M_SID & PRO_baseline
+
+# -------- CLIP-SF feature extraction (used by GENIUS / PRO / M2M_SID) --------
+openai-clip                     # provides `import clip`
+ftfy
+regex
+
+# -------- Qwen3-VL image/video input helpers --------
+qwen-vl-utils>=0.0.8
+
+# -------- (optional) attention kernels --------
+# flash-attn is strongly recommended for the Qwen3-VL / WeMM baselines.
+# Install the wheel matching your CUDA/torch build, e.g.:
+#     pip install flash-attn==2.6.3 --no-build-isolation
+# flash-attn

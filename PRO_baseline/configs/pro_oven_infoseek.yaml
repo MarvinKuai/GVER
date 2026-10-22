@@ -1,0 +1,89 @@
+# MGR_PRO on OVEN + INFOSEEK (task 8), CLIP-SF ViT-L/14 (768d), joint training
+# Encoder / method hyperparameters follow the PRO reference setup.
+paths:
+  # ---- training data (OVEN_train ∪ INFOSEEK_train, SHARED cand pool) ----
+  train_query_embeddings: /xxx/outputs/data_packed/train/query_feats.pt
+  train_item_embeddings:  /xxx/outputs/data_packed/cand/cand_feats.pt
+  train_item_modalities:  /xxx/outputs/data_packed/cand/cand_modalities.pt
+  train_pairs:            /xxx/outputs/data_packed/train/pairs.jsonl
+  # (manifest fields are optional and unused when the tensor+pairs pair is provided)
+  train_query_manifest:   TRAIN_QUERY_MANIFEST_PATH
+  train_item_manifest:    TRAIN_ITEM_MANIFEST_PATH
+
+  # ---- validation (used only if a separate script picks it up; core scripts read train/test) ----
+  validation_query_embeddings: /xxx/outputs/data_packed/val/query_feats.pt
+  validation_item_embeddings:  /xxx/outputs/data_packed/cand/cand_feats.pt
+  validation_item_modalities:  /xxx/outputs/data_packed/cand/cand_modalities.pt
+  validation_pairs:            /xxx/outputs/data_packed/val/pairs.jsonl
+  validation_query_manifest:   VALIDATION_QUERY_MANIFEST_PATH
+  validation_item_manifest:    VALIDATION_ITEM_MANIFEST_PATH
+
+  # ---- test data (OVEN + INFOSEEK combined, SHARED cand pool) ----
+  test_query_embeddings: /xxx/outputs/data_packed/test/query_feats.pt
+  test_item_embeddings:  /xxx/outputs/data_packed/cand/cand_feats.pt
+  test_item_modalities:  /xxx/outputs/data_packed/cand/cand_modalities.pt
+  test_qrels:            /xxx/outputs/data_packed/test/qrels.txt
+  test_query_manifest:   TEST_QUERY_MANIFEST_PATH
+  test_item_manifest:    TEST_ITEM_MANIFEST_PATH
+
+  # ---- checkpoints & outputs ----
+  quantizer_checkpoint: /xxx/outputs/ckpt/quantizer.pt
+  retriever_checkpoint: /xxx/outputs/ckpt/retriever.pt
+  output_json:          /xxx/outputs/eval/results.json
+
+# Extraction (unused: features are already extracted via extract_clipsf_feats.py)
+extract:
+  reference_code_root: REFERENCE_CODE_ROOT
+  genir_root: GENIR_ROOT
+  mbeir_data_root: /xxx/m-beir
+  model_name: ViT-L/14
+  checkpoint_path: /dev/shm/genius_ckpt/clip_sf_large.pth
+  clip_model_root: /dev/shm/genius_ckpt/clip_dl_root
+  query_instruct_path: instructions/query_instructions.tsv
+  enable_query_instruct: true
+  batch_size: 128
+  num_workers: 8
+  image_size: 224,224
+  device: cuda:0
+
+# Quantizer: identical to original pro_multimodal.yaml
+quantizer:
+  embedding_dim: 768
+  levels: 16
+  codebook_sizes: [512, 512, 512, 512, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 2048, 2048, 2048, 2048]
+  modality_tokens: 3
+  combiner_projection_dim: 2560
+  combiner_hidden_dim: 5120
+  kmeans_init: true
+  kmeans_iters: 1000
+  codebook_decay: 0.9
+  ema_update: true
+  threshold_ema_dead_code: 2
+  learning_rate: 0.0001
+  epochs: 20
+  batch_size: 512
+  gradient_accumulation_steps: 1
+  rq_loss_weight: 100.0
+  mse_loss_weight: 100.0
+  prefix_ranking_weight: 100.0
+  prefix_ranking_warmup_fraction: 0.1
+  prefix_ranking_temperature: 0.05
+  prefix_ranking_topk: 128
+  prefix_ranking_levels: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
+
+# Retriever: identical to original pro_multimodal.yaml
+retriever:
+  model_name: t5-small
+  embedding_dim: 768
+  learning_rate: 0.0001
+  epochs: 30
+  batch_size: 512
+  beam_size: 50
+  output_size: 100
+  score_fusion_enabled: true
+  score_fusion_weight: 10.0
+  score_fusion_normalize_bias: true
+
+diagnostics:
+  beam_size: 20
+seed: 2023

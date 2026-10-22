@@ -1,0 +1,5 @@
+XSym
+0036
+d42f71ac11e8eee570e69b700a561596
+../CLIP_baseline/mbeir_tar_reader.py
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           

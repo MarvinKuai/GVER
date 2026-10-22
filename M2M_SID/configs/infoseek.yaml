@@ -1,0 +1,90 @@
+paths:
+  train_query_embeddings: /xxx/features/data_perpool/INFOSEEK/train/query_feats.pt
+  train_item_embeddings:  /xxx/features/data_perpool/INFOSEEK/cand/cand_feats.pt
+  train_item_modalities:  /xxx/features/data_perpool/INFOSEEK/cand/cand_modalities.pt
+  train_pairs:            /xxx/features/data_perpool/INFOSEEK/train/pairs.jsonl
+  train_query_manifest:   TRAIN_QUERY_MANIFEST_PATH
+  train_item_manifest:    TRAIN_ITEM_MANIFEST_PATH
+
+  validation_query_embeddings: /xxx/features/data_perpool/INFOSEEK/val/query_feats.pt
+  validation_item_embeddings:  /xxx/features/data_perpool/INFOSEEK/cand/cand_feats.pt
+  validation_item_modalities:  /xxx/features/data_perpool/INFOSEEK/cand/cand_modalities.pt
+  validation_pairs:            /xxx/features/data_perpool/INFOSEEK/val/pairs.jsonl
+  validation_query_manifest:   VALIDATION_QUERY_MANIFEST_PATH
+  validation_item_manifest:    VALIDATION_ITEM_MANIFEST_PATH
+
+  test_query_embeddings: /xxx/features/data_perpool/INFOSEEK/test/query_feats.pt
+  test_item_embeddings:  /xxx/features/data_perpool/INFOSEEK/cand/cand_feats.pt
+  test_item_modalities:  /xxx/features/data_perpool/INFOSEEK/cand/cand_modalities.pt
+  test_qrels:            /xxx/features/data_perpool/INFOSEEK/test/qrels.txt
+  test_query_manifest:   TEST_QUERY_MANIFEST_PATH
+  test_item_manifest:    TEST_ITEM_MANIFEST_PATH
+
+  quantizer_checkpoint: /xxx/outputs/INFOSEEK/quantizer.pt
+  retriever_checkpoint: /xxx/outputs/INFOSEEK/retriever.pt
+  output_json:          /xxx/outputs/INFOSEEK/results.json
+
+quantizer:
+  embedding_dim: 768
+  levels: 16
+  codebook_sizes: [512, 512, 512, 512, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 2048, 2048, 2048, 2048]
+  modality_tokens: 3
+  combiner_projection_dim: 2560
+  combiner_hidden_dim: 5120
+  kmeans_init: true
+  kmeans_iters: 1000
+  codebook_decay: 0.9
+  ema_update: true
+  threshold_ema_dead_code: 2
+  learning_rate: 0.0001
+  epochs: 20
+  batch_size: 512
+  gradient_accumulation_steps: 1
+  rq_loss_weight: 100.0
+  mse_loss_weight: 100.0
+  prefix_ranking_weight: 100.0
+  prefix_ranking_warmup_fraction: 0.1
+  prefix_ranking_temperature: 0.05
+  prefix_ranking_topk: 128
+  prefix_ranking_levels: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
+  n_views: 2
+  view_contrastive_weight: 1.0
+  # NPC: pull true neighbours (cos>=0.85) into shared shallow prefixes.
+  neighbor_consistency_weight: 1.0
+  neighbor_consistency_levels: [1, 2, 3, 4]
+  neighbor_consistency_neighbors: 4
+  neighbor_consistency_sim_threshold: 0.85
+  neighbor_consistency_warmup_fraction: 0.1
+  # HardNeg on deep levels: push mid-sim confusers (0.60<=cos<0.85) apart.
+  # Key for INFOSEEK attribute disambiguation.
+  hard_neg_contrastive_weight: 0.5
+  hard_neg_contrastive_levels: [13, 14, 15, 16]
+  hard_neg_contrastive_num: 16
+  hard_neg_contrastive_sim_low: 0.60
+  hard_neg_contrastive_sim_high: 0.85
+  hard_neg_contrastive_temperature: 0.07
+  hard_neg_contrastive_warmup_fraction: 0.2
+
+retriever:
+  model_name: t5-small
+  embedding_dim: 768
+  learning_rate: 0.0001
+  epochs: 30
+  batch_size: 512
+  beam_size: 50
+  output_size: 100
+  score_fusion_enabled: true
+  score_fusion_weight: 10.0
+  score_fusion_normalize_bias: true
+  score_fusion_rank_aware: true
+  # Fusion sweep winner on INFOSEEK: hw=60, hf=0.3 lifts R@1 to 10.20 (beats
+  # GENIUS 9.46 by +0.74) and also hits best R@10/nDCG@10 in the hw grid.
+  score_fusion_head_weight: 60.0
+  score_fusion_tail_weight: 2.0
+  score_fusion_head_frac: 0.3
+  label_smoothing: 0.1
+  candidate_aware_smoothing: true
+
+diagnostics:
+  beam_size: 20
+seed: 2023

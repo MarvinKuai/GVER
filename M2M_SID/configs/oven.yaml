@@ -1,0 +1,89 @@
+paths:
+  train_query_embeddings: /xxx/features/data_perpool/OVEN/train/query_feats.pt
+  train_item_embeddings:  /xxx/features/data_perpool/OVEN/cand/cand_feats.pt
+  train_item_modalities:  /xxx/features/data_perpool/OVEN/cand/cand_modalities.pt
+  train_pairs:            /xxx/features/data_perpool/OVEN/train/pairs.jsonl
+  train_query_manifest:   TRAIN_QUERY_MANIFEST_PATH
+  train_item_manifest:    TRAIN_ITEM_MANIFEST_PATH
+
+  validation_query_embeddings: /xxx/features/data_perpool/OVEN/val/query_feats.pt
+  validation_item_embeddings:  /xxx/features/data_perpool/OVEN/cand/cand_feats.pt
+  validation_item_modalities:  /xxx/features/data_perpool/OVEN/cand/cand_modalities.pt
+  validation_pairs:            /xxx/features/data_perpool/OVEN/val/pairs.jsonl
+  validation_query_manifest:   VALIDATION_QUERY_MANIFEST_PATH
+  validation_item_manifest:    VALIDATION_ITEM_MANIFEST_PATH
+
+  test_query_embeddings: /xxx/features/data_perpool/OVEN/test/query_feats.pt
+  test_item_embeddings:  /xxx/features/data_perpool/OVEN/cand/cand_feats.pt
+  test_item_modalities:  /xxx/features/data_perpool/OVEN/cand/cand_modalities.pt
+  test_qrels:            /xxx/features/data_perpool/OVEN/test/qrels.txt
+  test_query_manifest:   TEST_QUERY_MANIFEST_PATH
+  test_item_manifest:    TEST_ITEM_MANIFEST_PATH
+
+  quantizer_checkpoint: /xxx/outputs/OVEN/quantizer.pt
+  retriever_checkpoint: /xxx/outputs/OVEN/retriever.pt
+  output_json:          /xxx/outputs/OVEN/results.json
+
+quantizer:
+  embedding_dim: 768
+  levels: 16
+  codebook_sizes: [512, 512, 512, 512, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 2048, 2048, 2048, 2048]
+  modality_tokens: 3
+  combiner_projection_dim: 2560
+  combiner_hidden_dim: 5120
+  kmeans_init: true
+  kmeans_iters: 1000
+  codebook_decay: 0.9
+  ema_update: true
+  threshold_ema_dead_code: 2
+  learning_rate: 0.0001
+  epochs: 20
+  batch_size: 512
+  gradient_accumulation_steps: 1
+  rq_loss_weight: 100.0
+  mse_loss_weight: 100.0
+  prefix_ranking_weight: 100.0
+  prefix_ranking_warmup_fraction: 0.1
+  prefix_ranking_temperature: 0.05
+  prefix_ranking_topk: 128
+  prefix_ranking_levels: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
+  # K-View ablation winner on OVEN: K=3 improves R@5/10/50/nDCG by 1.3-1.8 pts
+  # while matching R@1. INFOSEEK keeps K=2 (K>=3 hurts R@1 on fine-grained attrs).
+  n_views: 3
+  view_contrastive_weight: 1.0
+  # NPC disabled on OVEN: ablation (A2) shows that pulling neighbours into shared
+  # shallow prefixes dilutes single-entity precision on coarse-grained OVEN.
+  # Turning NPC off gives R@1 +0.29, R@5 +3.23, nDCG@10 +0.81 vs. NPC=1.0.
+  # (NPC remains ON for INFOSEEK where fine-grained attributes need it.)
+  neighbor_consistency_weight: 0.0
+  neighbor_consistency_levels: [1, 2, 3, 4]
+  neighbor_consistency_neighbors: 4
+  neighbor_consistency_sim_threshold: 0.85
+  neighbor_consistency_warmup_fraction: 0.1
+  # HardNeg disabled on OVEN: single-entity retrieval hurts when deep push
+  # separates sibling views of the same Wikipedia entity.
+  hard_neg_contrastive_weight: 0.0
+
+retriever:
+  model_name: t5-small
+  embedding_dim: 768
+  learning_rate: 0.0001
+  epochs: 30
+  batch_size: 512
+  beam_size: 50
+  output_size: 100
+  score_fusion_enabled: true
+  score_fusion_weight: 10.0
+  score_fusion_normalize_bias: true
+  score_fusion_rank_aware: true
+  # Grid-search winner on OVEN: hw=30, hf=0.4 maximizes R@10/R@50/nDCG while
+  # keeping R@1 within 0.15 of the best R@1 configuration.
+  score_fusion_head_weight: 30.0
+  score_fusion_tail_weight: 2.0
+  score_fusion_head_frac: 0.4
+  label_smoothing: 0.1
+  candidate_aware_smoothing: true
+
+diagnostics:
+  beam_size: 20
+seed: 2023

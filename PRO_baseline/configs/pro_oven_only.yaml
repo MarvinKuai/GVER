@@ -1,0 +1,81 @@
+# MGR_PRO on OVEN-only, CLIP-SF ViT-L/14 (768d), independent candidate pool.
+# All hyperparameters strictly follow the PRO reference setup (beam_size=50).
+paths:
+  train_query_embeddings: /xxx/outputs/data_perpool/OVEN/train/query_feats.pt
+  train_item_embeddings:  /xxx/outputs/data_perpool/OVEN/cand/cand_feats.pt
+  train_item_modalities:  /xxx/outputs/data_perpool/OVEN/cand/cand_modalities.pt
+  train_pairs:            /xxx/outputs/data_perpool/OVEN/train/pairs.jsonl
+  train_query_manifest:   TRAIN_QUERY_MANIFEST_PATH
+  train_item_manifest:    TRAIN_ITEM_MANIFEST_PATH
+
+  validation_query_embeddings: /xxx/outputs/data_perpool/OVEN/val/query_feats.pt
+  validation_item_embeddings:  /xxx/outputs/data_perpool/OVEN/cand/cand_feats.pt
+  validation_item_modalities:  /xxx/outputs/data_perpool/OVEN/cand/cand_modalities.pt
+  validation_pairs:            /xxx/outputs/data_perpool/OVEN/val/pairs.jsonl
+  validation_query_manifest:   VALIDATION_QUERY_MANIFEST_PATH
+  validation_item_manifest:    VALIDATION_ITEM_MANIFEST_PATH
+
+  test_query_embeddings: /xxx/outputs/data_perpool/OVEN/test/query_feats.pt
+  test_item_embeddings:  /xxx/outputs/data_perpool/OVEN/cand/cand_feats.pt
+  test_item_modalities:  /xxx/outputs/data_perpool/OVEN/cand/cand_modalities.pt
+  test_qrels:            /xxx/outputs/data_perpool/OVEN/test/qrels.txt
+  test_query_manifest:   TEST_QUERY_MANIFEST_PATH
+  test_item_manifest:    TEST_ITEM_MANIFEST_PATH
+
+  quantizer_checkpoint: /xxx/outputs/ckpt_perpool/OVEN/quantizer.pt
+  retriever_checkpoint: /xxx/outputs/ckpt_perpool/OVEN/retriever.pt
+  output_json:          /xxx/outputs/eval_perpool/OVEN/results.json
+
+extract:
+  reference_code_root: REFERENCE_CODE_ROOT
+  genir_root: GENIR_ROOT
+  mbeir_data_root: /xxx/m-beir
+  model_name: ViT-L/14
+  checkpoint_path: /dev/shm/genius_ckpt/clip_sf_large.pth
+  clip_model_root: /dev/shm/genius_ckpt/clip_dl_root
+  query_instruct_path: instructions/query_instructions.tsv
+  enable_query_instruct: true
+  batch_size: 128
+  num_workers: 8
+  image_size: 224,224
+  device: cuda:0
+
+quantizer:
+  embedding_dim: 768
+  levels: 16
+  codebook_sizes: [512, 512, 512, 512, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 2048, 2048, 2048, 2048]
+  modality_tokens: 3
+  combiner_projection_dim: 2560
+  combiner_hidden_dim: 5120
+  kmeans_init: true
+  kmeans_iters: 1000
+  codebook_decay: 0.9
+  ema_update: true
+  threshold_ema_dead_code: 2
+  learning_rate: 0.0001
+  epochs: 20
+  batch_size: 512
+  gradient_accumulation_steps: 1
+  rq_loss_weight: 100.0
+  mse_loss_weight: 100.0
+  prefix_ranking_weight: 100.0
+  prefix_ranking_warmup_fraction: 0.1
+  prefix_ranking_temperature: 0.05
+  prefix_ranking_topk: 128
+  prefix_ranking_levels: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
+
+retriever:
+  model_name: t5-small
+  embedding_dim: 768
+  learning_rate: 0.0001
+  epochs: 30
+  batch_size: 512
+  beam_size: 50
+  output_size: 100
+  score_fusion_enabled: true
+  score_fusion_weight: 10.0
+  score_fusion_normalize_bias: true
+
+diagnostics:
+  beam_size: 20
+seed: 2023
