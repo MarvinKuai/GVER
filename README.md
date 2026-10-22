@@ -17,13 +17,7 @@
 
 ## ✨ Overview
 
-**GVER** is a generative retrieval model for vision-language entity search  
-on the M-BEIR benchmark (task 8: OVEN & INFOSEEK). It represents every  
-gallery item as a short **Semantic ID (SID)** produced by a deep residual  
-quantizer over fused CLIP-SF features, and lets a T5 decoder generate the  
-SID of the target item directly from a multimodal query, using a prefix  
-trie for constrained beam search. All numbers in the paper are obtained  
-under the strict no-rerank protocol.
+**GVER** is a generative retrieval model for vision-language entity search on the M-BEIR benchmark (task 8: OVEN & INFOSEEK). It represents every gallery item as a short **Semantic ID (SID)** produced by a deep residual quantizer over fused CLIP-SF features, and lets a T5 decoder generate the SID of the target item directly from a multimodal query, using a prefix trie for constrained beam search. All numbers in the paper are obtained under the strict no-rerank protocol.
 
 ---
 
